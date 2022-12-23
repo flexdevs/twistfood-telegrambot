@@ -32,9 +32,17 @@ $burgers = array('Gamburger', 'Chizburger', 'Dabl Burger', 'Dabl Chiz');
 
 $lavash = array("Lavash mol go'shtli", "Lavash mol go'shtli");
 
+$narxi = 15000;
+
 $choose_count = json_encode([
-    "inline_keyboard"=>[
-    [["text"=>"➖","callback_data"=>"minus"],["text"=>"1","callback_data"=>"null"],["text"=>"➕","callback_data"=>"plus"]]
+    "resize_keyboard"=>true,
+    "one_time_keyboard"=>true,
+    "keyboard"=>[
+        [["text"=>"1"]],
+        [["text"=>"2"],["text"=>"3"],["text"=>"4"]],
+        [["text"=>"5"],["text"=>"6"],["text"=>"7"]],
+        [["text"=>"8"],["text"=>"9"],["text"=>"10"]],
+        [["text"=>"⬅️ Orqaga"]]
     ]
     ]);
 
@@ -186,12 +194,13 @@ if(isset($text) && $userstep == 'choose_category'){
 }
 
 if(isset($text) && $userstep == 'choose_product'){
-    foreach($product as $burgers){
+    foreach($burgers as $product){
         if($text == $product){
-            $bot->sendMessage([
+            file_put_contents('../step.txt', "choose_count");
+            $bot->sendPhoto([
                 "chat_id"=>$fid,
-                //"photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
-                "text"=>"<b>miqdorini tanlang: $text</b>",
+                "photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
+                "caption"=>"<b>Nomi: $text\nMa'lumot: \nNarxi:$narxi \nMiqdorini tanlang</b>",
                 "parse_mode"=>"html",
                 'disable_web_page_preview'=>true,
                 "reply_markup"=>$choose_count
@@ -200,72 +209,92 @@ if(isset($text) && $userstep == 'choose_product'){
     }
 }
 
-
-
-
-// if(isset($text) and $text != '/start' and $text != '/setlang' and (stripos($text,"/add")!==false)==false){
-//     $query = mysqli_fetch_array(mysqli_query($conn, "SELECT * FROM `maxfiy` WHERE `soz`='$text'"));
-//     // $info =  mysqli_fetch_array(mysqli_query($conn, "SELECT * FROM `azolar` WHERE `uid`='$fid'"));
-//     // if($query){
-//     //     $bot->sendMessage([
-//     //         "chat_id"=>$fid,
-//     //         "text"=>$query['tarjimasi'],
-//     //         "parse_mode"=>"html",
-//     //         ]);
-//     // }else{
-//         $info =  mysqli_fetch_array(mysqli_query($conn, "SELECT * FROM `azolar` WHERE `uid`='$fid'"));
-//         $trans = new TranslateApi();
-//         $result = $trans->translate($info['dan'], $info['ga'], $text);
-//         $bot->sendMessage([
-//                 "chat_id"=>$fid,
-//                 "text"=>$result,
-//                 "parse_mode"=>"html",
-//                 ]);
-//     // }
-// }
-
-	
-	if((!empty($text)) and ($text == "/speed")){
-		$start_time = round(microtime(true) * 1000);
-		$send = $bot->sendMessage([
-		'chat_id'=>$fid,
-		'text'=>"🚀 Ping: 0 ms.",
-		])['result']['message_id'];
-		$end_time = round(microtime(true) * 1000);
-		$time_taken = $end_time - $start_time;
-		$bot->editMessageText([
-		"chat_id"=>$fid,
-		"message_id"=>$send,
-		"text"=>"🚀 Ping: $time_taken ms.",
-		]);
-		exit;
-	}
-
-
-
-    if((!empty($text)) and ($text == "📊 Statistika")){
-        $soat = date("H");
-        $sana = date("d-m-Y");
-        $us = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar`"));
-        $gra = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar`"));
-        $grd = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `delguruh`"));
-        $ubugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar` WHERE `sana`='$sana'"));
-        $soats = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar` WHERE `sana`='$sana' AND `soat`='$soat'"));
-        $gbugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar` WHERE `sana`='$sana'"));
-        $ybugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `delguruh` WHERE `sana`='$sana'"));
-        $soatg = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar` WHERE `sana`='$sana' AND `soat`='$soat'"));
-        $gr = $gra + $grd;
-        $count = $us + $gr;
-        $soat1 = date("H:i:s");
-        $sana1 = date("d.m.Y");
-        $bot->sendMessage([
-        'chat_id'=>$admin,
-        'text'=>"📊 Bot statistikasi\n\nBarcha foydalanuvchilar: <b>$us</b> ta\n1 soat ichida qo'shilgan foydalanuvchilar: $soats ta\nBugun qo'shilgan foydalanuvchilar: $ubugun\n\nBugun: $sana1\nSoat: $soat1",
-        'parse_mode'=>"html",
-        ]);
-        statistika("user", $fid);
-        exit;
+if(isset($text) && $userstep == 'choose_count'){
+    $num = (int)$text;
+    if($num >= 1 && $num <= 10){
+        file_put_contents('../step.txt', "add_basket");
+        $bot->sendPhoto([
+            "chat_id"=>$fid,
+            "photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
+            "caption"=>"<b>Nomi: $text\nMa'lumot: \nUmumiy narxi:".$narxi*$num." \nSavatga qo'shilsinmi?</b>",
+            "parse_mode"=>"html",
+            'disable_web_page_preview'=>true,
+            "reply_markup"=>json_encode([
+                "resize_keyboard"=>true,
+                "one_time_keyboard"=>true,
+                "keyboard"=>[
+                    [["text"=>"Ha ✅"]],
+                    [["text"=>"Yo'q ❌"]],
+            ]
+            ]),
+            ]);
     }
+}
+
+if(isset($text) && $userstep == 'add_basket'){
+    if($text == "Ha ✅"){
+        file_put_contents('../step.txt', "choose_category");
+        $bot->sendMessage([
+            "chat_id"=>$fid,
+            "text"=>"<b>Savatchaga qo'shildi</b>",
+            "parse_mode"=>"html",
+            'disable_web_page_preview'=>true,
+            "reply_markup"=>createmenu($category_menu, 2)
+            ]);
+    }elseif($text == "Yo'q ❌"){
+        file_put_contents('../step.txt', "choose_category");
+        $bot->sendMessage([
+            "chat_id"=>$fid,
+            "text"=>"<b>Savatchaga qo'shilmadi</b>",
+            "parse_mode"=>"html",
+            'disable_web_page_preview'=>true,
+            "reply_markup"=>createmenu($category_menu, 2)
+            ]);
+    }
+    
+}
+
+if((!empty($text)) and ($text == "/speed")){
+    $start_time = round(microtime(true) * 1000);
+    $send = $bot->sendMessage([
+    'chat_id'=>$fid,
+    'text'=>"🚀 Ping: 0 ms.",
+    ])['result']['message_id'];
+    $end_time = round(microtime(true) * 1000);
+    $time_taken = $end_time - $start_time;
+    $bot->editMessageText([
+    "chat_id"=>$fid,
+    "message_id"=>$send,
+    "text"=>"🚀 Ping: $time_taken ms.",
+    ]);
+    exit;
+}
+
+
+
+if((!empty($text)) and ($text == "📊 Statistika")){
+    $soat = date("H");
+    $sana = date("d-m-Y");
+    $us = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar`"));
+    $gra = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar`"));
+    $grd = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `delguruh`"));
+    $ubugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar` WHERE `sana`='$sana'"));
+    $soats = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `azolar` WHERE `sana`='$sana' AND `soat`='$soat'"));
+    $gbugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar` WHERE `sana`='$sana'"));
+    $ybugun = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `delguruh` WHERE `sana`='$sana'"));
+    $soatg = mysqli_num_rows(mysqli_query($conn,"SELECT * FROM `guruhlar` WHERE `sana`='$sana' AND `soat`='$soat'"));
+    $gr = $gra + $grd;
+    $count = $us + $gr;
+    $soat1 = date("H:i:s");
+    $sana1 = date("d.m.Y");
+    $bot->sendMessage([
+    'chat_id'=>$admin,
+    'text'=>"📊 Bot statistikasi\n\nBarcha foydalanuvchilar: <b>$us</b> ta\n1 soat ichida qo'shilgan foydalanuvchilar: $soats ta\nBugun qo'shilgan foydalanuvchilar: $ubugun\n\nBugun: $sana1\nSoat: $soat1",
+    'parse_mode'=>"html",
+    ]);
+    statistika("user", $fid);
+    exit;
+}
 
 }
 ?>
