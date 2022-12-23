@@ -32,15 +32,15 @@ $burgers = array('Gamburger', 'Chizburger', 'Dabl Burger', 'Dabl Chiz');
 
 $lavash = array("Lavash mol go'shtli", "Lavash mol go'shtli");
 
+$userstep = file_get_contents('../step.txt');
+
+if((!empty($type)) and ($type == "private")){
+
 $choose_count = json_encode([
     "inline_keyboard"=>[
     [["text"=>"➖","callback_data"=>"minus"],["text"=>"1","callback_data"=>"null"],["text"=>"➕","callback_data"=>"plus"]]
     ]
-    ]);
-
-$userstep = file_get_contents('../step.txt');
-
-if((!empty($type)) and ($type == "private")){
+]);
 
 $mainmenu = json_encode([
     "resize_keyboard"=>true,
@@ -186,15 +186,14 @@ if(isset($text) && $userstep == 'choose_category'){
 }
 
 if(isset($text) && $userstep == 'choose_product'){
-    foreach($product as $burgers){
-        if($text == $product){
+    foreach($category_menu as $category){
+        if($text == $category){
             $bot->sendMessage([
                 "chat_id"=>$fid,
-                //"photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
-                "text"=>"<b>miqdorini tanlang: $text</b>",
+                "text"=>"<b>Mahsulotni tanlang: $text</b>",
                 "parse_mode"=>"html",
                 'disable_web_page_preview'=>true,
-                "reply_markup"=>$choose_count
+                "reply_markup"=>createmenu($category_menu, 2)
                 ]);
         }
     }
