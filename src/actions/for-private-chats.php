@@ -32,6 +32,10 @@ $burgers = array('Gamburger', 'Chizburger', 'Dabl Burger', 'Dabl Chiz');
 
 $lavash = array("Lavash mol go'shtli", "Lavash mol go'shtli");
 
+$nomi = '';
+
+$savatcha = [];
+
 $narxi = 15000;
 
 $choose_count = json_encode([
@@ -60,6 +64,14 @@ $mainmenu = json_encode([
     ]
 ]);
 
+if($text == "📥 Savat"){
+    $bot->sendMessage([
+        "chat_id"=>$fid,
+        "text"=>$savatcha[0],
+        "parse_mode"=>"html",
+        'disable_web_page_preview'=>true,
+        ]);
+}
 
 
 if((!empty($text)) and ($text == "/start")){
@@ -196,11 +208,12 @@ if(isset($text) && $userstep == 'choose_category'){
 if(isset($text) && $userstep == 'choose_product'){
     foreach($burgers as $product){
         if($text == $product){
+            $nomi = $text;
             file_put_contents('../step.txt', "choose_count");
             $bot->sendPhoto([
                 "chat_id"=>$fid,
                 "photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
-                "caption"=>"<b>Nomi: $text\nMa'lumot: \nNarxi:$narxi \nMiqdorini tanlang</b>",
+                "caption"=>"<b>Nomi: $nomi\nMa'lumot: \nNarxi:$narxi \n\nBuyurtmani davom ettirish uchun miqdorini tanlang</b>",
                 "parse_mode"=>"html",
                 'disable_web_page_preview'=>true,
                 "reply_markup"=>$choose_count
@@ -216,7 +229,7 @@ if(isset($text) && $userstep == 'choose_count'){
         $bot->sendPhoto([
             "chat_id"=>$fid,
             "photo"=>"https://www.reklamzamani.net/dosyalar/urun/4xNLmo.jpg",
-            "caption"=>"<b>Nomi: $text\nMa'lumot: \nUmumiy narxi:".$narxi*$num." \nSavatga qo'shilsinmi?</b>",
+            "caption"=>"<b>Nomi: $nomi\nMa'lumot: \nUmumiy narxi:".$narxi*$num." \nSavatga qo'shilsinmi?</b>",
             "parse_mode"=>"html",
             'disable_web_page_preview'=>true,
             "reply_markup"=>json_encode([
@@ -234,9 +247,10 @@ if(isset($text) && $userstep == 'choose_count'){
 if(isset($text) && $userstep == 'add_basket'){
     if($text == "Ha ✅"){
         file_put_contents('../step.txt', "choose_category");
+        array_push($savatcha, "salom");
         $bot->sendMessage([
             "chat_id"=>$fid,
-            "text"=>"<b>Savatchaga qo'shildi</b>",
+            "text"=>"<b>Savatchaga qo'shildi ✅</b>",
             "parse_mode"=>"html",
             'disable_web_page_preview'=>true,
             "reply_markup"=>createmenu($category_menu, 2)
@@ -245,13 +259,38 @@ if(isset($text) && $userstep == 'add_basket'){
         file_put_contents('../step.txt', "choose_category");
         $bot->sendMessage([
             "chat_id"=>$fid,
-            "text"=>"<b>Savatchaga qo'shilmadi</b>",
+            "text"=>"<b>Savatchaga qo'shilmadi ❌</b>",
             "parse_mode"=>"html",
             'disable_web_page_preview'=>true,
             "reply_markup"=>createmenu($category_menu, 2)
             ]);
     }
     
+}
+
+if(isset($text) && $text == "⬅️ Orqaga"){
+    if($userstep == 'choose_category'){
+        $bot->sendMessage([
+            "chat_id"=>$fid,
+            "text"=>"<b>Buyurtma berishni boshlash uchun 🛍 Buyurtma berish tugmasini bosing
+     
+Shuningdek, aksiyalarni ko'rishingiz va bizning filiallar bilan tanishishingiz mumkin
+                
+👉 <a href='https://telegra.ph/Menyu-12-19-39'>TwistFood menu</a></b>",
+            "parse_mode"=>"html",
+            'disable_web_page_preview'=>true,
+            "reply_markup"=>$mainmenu
+            ]);
+    }elseif($userstep == 'choose_product' || $userstep == 'choose_count'){
+        file_put_contents('../step.txt', "choose_category");
+        $bot->sendMessage([
+            "chat_id"=>$fid,
+            "text"=>"<b>Kategoriyani tanlang</b>",
+            "parse_mode"=>"html",
+            'disable_web_page_preview'=>true,
+            "reply_markup"=>createmenu($category_menu, 2)
+            ]);
+    }
 }
 
 if((!empty($text)) and ($text == "/speed")){
